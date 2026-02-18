@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 300px;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 16px;
+    }
+    .status-card {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255,255,255,0.07);
+      text-align: center;
+    }
+    .status-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #555;
+      margin-bottom: 4px;
+    }
+    .status-timer {
+      font-size: 36px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -1px;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .status-state { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+    .status-state.hidden    { color: #555; }
+    .status-state.running   { color: #e74c3c; }
+    .status-state.paused    { color: #2ecc71; }
+    .status-state.countdown { color: #3498db; }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .btn {
+      flex: 1;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      line-height: 1.2;
+      color: #fff;
+    }
+    .btn:hover  { opacity: 0.85; }
+    .btn:active { transform: scale(0.96); }
+    .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+    .btn .btn-icon { font-size: 18px; }
+    .btn-countdown { background: linear-gradient(135deg, #1a5276, #2980b9); }
+    .btn-reset     { background: linear-gradient(135deg, #6c3483, #9b59b6); }
+    .card {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+    .card-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #e74c3c;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .shortcut-display { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    kbd {
+      background: #0f3460;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-bottom: 2px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-family: monospace;
+      color: #fff;
+    }
+    .plus { color: #555; font-size: 13px; }
+    .change-link {
+      display: block; margin-top: 8px; font-size: 11px;
+      color: #e74c3c; text-decoration: none; cursor: pointer;
+    }
+    .change-link:hover { text-decoration: underline; }
+    .how p { font-size: 12px; color: #aaa; line-height: 1.7; }
+    .footer { font-size: 11px; color: #444; text-align: center; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h1>🧋 Yappuccino Timer</h1>
+  <p class="subtitle">Classroom refocus tool</p>
+
+  <div class="status-card">
+    <div class="status-label">Current accrued time</div>
+    <div class="status-timer" id="statusTimer">--:--</div>
+    <div class="status-state hidden" id="statusState">● idle</div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-countdown" id="btnCountdown" disabled>
+      <span class="btn-icon">⏳</span>Work it off
+    </button>
+    <button class="btn btn-reset" id="btnReset">
+      <span class="btn-icon">↺</span>Reset timer
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⌨️ Hotkey</div>
+    <div class="shortcut-display">
+      <kbd>Alt</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>Y</kbd>
+    </div>
+    <a class="change-link" id="changeShortcut">→ Change in Chrome settings</a>
+  </div>
+
+  <div class="card how">
+    <div class="card-title">📋 How it works</div>
+    <p><span>1️⃣</span> Hotkey → red count-up timer starts</p>
+    <p><span>2️⃣</span> Hotkey → pauses &amp; saves time</p>
+    <p><span>3️⃣</span> Hotkey → resumes from saved time</p>
+    <p><span>⏳</span> "Work it off" → blue countdown from accrued time</p>
+    <p><span>↺</span> "Reset timer" → clears everything silently</p>
+  </div>
+
+  <p class="footer">Works on any Chrome tab ✦ Made for teachers 🍎</p>
+
+  <script src="popup.js"></script>
+</body>
+</html>
