@@ -41,14 +41,17 @@ function refreshStatus() {
   });
 }
 
+const WEEKDAY_ABBR = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 function renderHistoryTable(rows) {
   if (rows.length === 0) {
     historyTable.innerHTML = '<tr><td class="history-empty" colspan="2">No data for this range</td></tr>';
     return;
   }
-  historyTable.innerHTML = rows.map(({ date, count }) =>
-    `<tr><td class="hist-date">${date}</td><td class="hist-count">${count}</td></tr>`
-  ).join('');
+  historyTable.innerHTML = rows.map(({ date, count }) => {
+    const weekday = WEEKDAY_ABBR[new Date(`${date}T00:00:00`).getDay()];
+    return `<tr><td class="hist-date">${weekday} ${date}</td><td class="hist-count">${count}</td></tr>`;
+  }).join('');
 }
 
 function refreshCounters() {
