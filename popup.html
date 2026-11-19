@@ -37,12 +37,27 @@
       color: #555;
       margin-bottom: 4px;
     }
-    .status-timer {
-      font-size: 36px;
+    .status-counter {
+      font-size: 40px;
       font-weight: 900;
       font-variant-numeric: tabular-nums;
       letter-spacing: -1px;
       color: #fff;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .status-counter-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .status-timer {
+      font-size: 14px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: #999;
       margin-bottom: 4px;
     }
     .status-state { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
@@ -77,6 +92,31 @@
     .btn .btn-icon { font-size: 18px; }
     .btn-countdown { background: linear-gradient(135deg, #1a5276, #2980b9); }
     .btn-reset     { background: linear-gradient(135deg, #6c3483, #9b59b6); }
+    .btn-clear     { background: linear-gradient(135deg, #78281f, #c0392b); width: 100%; }
+    select.range-select {
+      width: 100%;
+      background: #0f3460;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    .range-total {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 900;
+      color: #fff;
+    }
+    .range-total-label {
+      text-align: center;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #555;
+      margin-top: 2px;
+    }
     .card {
       background: #16213e;
       border-radius: 12px;
@@ -118,7 +158,8 @@
   <p class="subtitle">Classroom refocus tool</p>
 
   <div class="status-card">
-    <div class="status-label">Current accrued time</div>
+    <div class="status-counter" id="statusCounter">0</div>
+    <div class="status-counter-label">interruptions today</div>
     <div class="status-timer" id="statusTimer">--:--</div>
     <div class="status-state hidden" id="statusState">● idle</div>
   </div>
@@ -129,6 +170,24 @@
     </button>
     <button class="btn btn-reset" id="btnReset">
       <span class="btn-icon">↺</span>Reset timer
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 Interruption history</div>
+    <select class="range-select" id="rangeSelect">
+      <option value="today">Today</option>
+      <option value="7">Last 7 days</option>
+      <option value="30">Last 30 days</option>
+      <option value="all">All time</option>
+    </select>
+    <div class="range-total" id="rangeTotal">0</div>
+    <div class="range-total-label">interruptions</div>
+  </div>
+
+  <div class="card">
+    <button class="btn btn-clear" id="btnClear">
+      <span class="btn-icon">🗑️</span>Clear all data
     </button>
   </div>
 
@@ -146,11 +205,14 @@
     <p><span>2️⃣</span> Hotkey → pauses &amp; saves time</p>
     <p><span>3️⃣</span> Hotkey → resumes from saved time</p>
     <p><span>⏳</span> "Work it off" → blue countdown from accrued time</p>
-    <p><span>↺</span> "Reset timer" → clears everything silently</p>
+    <p><span>↺</span> "Reset timer" → clears the on-screen timer silently</p>
+    <p><span>🔢</span> Each "on" press counts as an interruption, tallied per day</p>
+    <p><span>🌙</span> Timer and today's count both reset at midnight</p>
   </div>
 
   <p class="footer">Works on any Chrome tab ✦ Made for teachers 🍎</p>
 
+  <script src="storage.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

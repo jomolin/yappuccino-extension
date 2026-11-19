@@ -5,7 +5,7 @@
   // ── State ──────────────────────────────────────────────────────────────────
   // states: 'hidden' | 'running' | 'paused' | 'countdown'
   let state = 'hidden';
-  let elapsed = 0;    // total accrued seconds (count-up)
+  let elapsed = 0;    // total accrued seconds (count-up), resets at local midnight
   let countdown = 0;  // remaining seconds during punishment countdown
   let intervalId = null;
   let overlay = null;
@@ -13,6 +13,35 @@
   let msgEl = null;
   let subEl = null;
   let modeLabelEl = null;
+  let counterEl = null;
+
+  let currentDay = yappTodayStr();
+  let todayCount = 0;
+  yappRollover(({ count }) => { todayCount = count; refreshCounterDisplay(); });
+  if (chrome.storage && chrome.storage.onChanged) {
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === 'local' && changes[YAPP_KEYS.count]) {
+        todayCount = changes[YAPP_KEYS.count].newValue || 0;
+        refreshCounterDisplay();
+      }
+    });
+  }
+
+  function refreshCounterDisplay() {
+    if (counterEl) counterEl.textContent = String(todayCount);
+  }
+
+  // Resets the count-up timer when the local date has changed since it started.
+  // Returns true if a rollover happened.
+  function checkDayRollover() {
+    const today = yappTodayStr();
+    if (today === currentDay) return false;
+    currentDay = today;
+    elapsed = 0;
+    countdown = 0;
+    yappRollover(({ count }) => { todayCount = count; refreshCounterDisplay(); });
+    return true;
+  }
 
   // ── Messages ───────────────────────────────────────────────────────────────
   const startMessages = [
@@ -141,18 +170,33 @@
           color: rgba(255,255,255,0.6);
           margin-bottom: 10px;
         }
-        #__yappuccino_overlay__ .__yap_timer__ {
+        #__yappuccino_overlay__ .__yap_counter__ {
           font-size: clamp(72px, 12vw, 110px);
           font-weight: 900;
           letter-spacing: -2px;
           color: #fff;
           text-shadow: 0 4px 20px rgba(0,0,0,0.3);
           line-height: 1;
+          font-variant-numeric: tabular-nums;
+        }
+        #__yappuccino_overlay__ .__yap_counter_label__ {
+          font-size: 13px;
+          font-weight: 700;
+          letter-spacing: 1px;
+          color: rgba(255,255,255,0.7);
+          margin-bottom: 18px;
+        }
+        #__yappuccino_overlay__ .__yap_timer__ {
+          font-size: 20px;
+          font-weight: 700;
+          letter-spacing: -0.5px;
+          color: rgba(255,255,255,0.85);
+          line-height: 1;
           margin-bottom: 20px;
           font-variant-numeric: tabular-nums;
           transition: transform 0.1s ease;
         }
-        #__yappuccino_overlay__ .__yap_timer__.tick { transform: scale(1.04); }
+        #__yappuccino_overlay__ .__yap_timer__.tick { transform: scale(1.08); }
         #__yappuccino_overlay__ .__yap_msg__ {
           font-size: clamp(20px, 3.5vw, 28px);
           font-weight: 800;
@@ -174,6 +218,8 @@
         }
       </style>
       <div class="__yap_mode_label__"></div>
+      <div class="__yap_counter__">0</div>
+      <div class="__yap_counter_label__">interruptions today</div>
       <div class="__yap_timer__">00:00</div>
       <div class="__yap_msg__"></div>
       <div class="__yap_sub__"></div>
@@ -184,6 +230,8 @@
     msgEl         = el.querySelector('.__yap_msg__');
     subEl         = el.querySelector('.__yap_sub__');
     modeLabelEl   = el.querySelector('.__yap_mode_label__');
+    counterEl     = el.querySelector('.__yap_counter__');
+    refreshCounterDisplay();
     return el;
   }
 
@@ -201,6 +249,8 @@
   // ── Core actions ───────────────────────────────────────────────────────────
   function startRunning() {
     ensureOverlay();
+    checkDayRollover();
+    yappIncrement(({ count }) => { todayCount = count; refreshCounterDisplay(); });
     const msg = randomFrom(startMessages);
     msgEl.textContent = msg.main;
     subEl.textContent = msg.sub;
@@ -209,8 +259,10 @@
     void overlay.offsetWidth;
     overlay.classList.add('running', 'visible');
     timerEl.textContent = formatTime(elapsed);
+    refreshCounterDisplay();
     playBuzzer();
     intervalId = setInterval(() => {
+      checkDayRollover();
       elapsed++;
       timerEl.textContent = formatTime(elapsed);
       tickAnim();
@@ -248,6 +300,12 @@
     timerEl.textContent = formatTime(countdown);
     state = 'countdown';
     intervalId = setInterval(() => {
+      if (checkDayRollover()) {
+        clearInterval(intervalId);
+        intervalId = null;
+        finishCountdown();
+        return;
+      }
       countdown--;
       elapsed--;
       timerEl.textContent = formatTime(countdown);

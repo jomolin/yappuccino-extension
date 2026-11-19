@@ -6,8 +6,12 @@ function formatTime(s) {
 
 const timerEl      = document.getElementById('statusTimer');
 const stateEl      = document.getElementById('statusState');
+const counterEl    = document.getElementById('statusCounter');
+const rangeSelect  = document.getElementById('rangeSelect');
+const rangeTotalEl = document.getElementById('rangeTotal');
 const btnCountdown = document.getElementById('btnCountdown');
 const btnReset     = document.getElementById('btnReset');
+const btnClear     = document.getElementById('btnClear');
 
 const stateLabels = {
   hidden:    '● idle',
@@ -37,6 +41,13 @@ function refreshStatus() {
   });
 }
 
+function refreshCounters() {
+  yappRollover((data) => {
+    counterEl.textContent = String(data.count);
+    rangeTotalEl.textContent = String(yappRangeTotal(rangeSelect.value, data));
+  });
+}
+
 function sendAction(action) {
   chrome.runtime.sendMessage({ action }, (resp) => {
     if (chrome.runtime.lastError) { void chrome.runtime.lastError; }
@@ -48,11 +59,23 @@ function sendAction(action) {
 }
 
 refreshStatus();
+refreshCounters();
 const iv = setInterval(refreshStatus, 1000);
 window.addEventListener('unload', () => clearInterval(iv));
 
+if (chrome.storage && chrome.storage.onChanged) {
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local') refreshCounters();
+  });
+}
+
 btnCountdown.addEventListener('click', () => sendAction('countdown'));
 btnReset.addEventListener('click',     () => sendAction('reset'));
+rangeSelect.addEventListener('change', refreshCounters);
+btnClear.addEventListener('click', () => {
+  if (!confirm('Clear all interruption counts and history? This cannot be undone.')) return;
+  yappClearAll(refreshCounters);
+});
 document.getElementById('changeShortcut').addEventListener('click', () => {
   chrome.tabs.create({ url: 'chrome://extensions/shortcuts' });
 });
