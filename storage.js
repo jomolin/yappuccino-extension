@@ -35,20 +35,23 @@ function yappClearAll(cb) {
   chrome.storage.local.remove([YAPP_KEYS.today, YAPP_KEYS.count, YAPP_KEYS.history], () => cb && cb());
 }
 
-// Sums interruptions across a preset range. range: 'today' | '7' | '30' | 'all'.
-function yappRangeTotal(range, { today, count, history }) {
+// Returns each day's count separately (not summed) within a preset range,
+// sorted most-recent first. range: 'today' | '7' | '30' | 'all'.
+function yappRangeEntries(range, { today, count, history }) {
   const entries = Object.assign({}, history, { [today]: count });
-  if (range === 'all') {
-    return Object.values(entries).reduce((sum, v) => sum + v, 0);
-  }
   const todayDate = new Date(`${today}T00:00:00`);
-  let cutoff = todayDate;
-  if (range === '7') { cutoff = new Date(todayDate); cutoff.setDate(cutoff.getDate() - 6); }
+  let cutoff = null;
+  if (range === 'today') cutoff = todayDate;
+  else if (range === '7') { cutoff = new Date(todayDate); cutoff.setDate(cutoff.getDate() - 6); }
   else if (range === '30') { cutoff = new Date(todayDate); cutoff.setDate(cutoff.getDate() - 29); }
-  let total = 0;
-  for (const [dateStr, c] of Object.entries(entries)) {
-    const d = new Date(`${dateStr}T00:00:00`);
-    if (d >= cutoff && d <= todayDate) total += c;
+  const rows = [];
+  for (const [date, c] of Object.entries(entries)) {
+    if (cutoff) {
+      const d = new Date(`${date}T00:00:00`);
+      if (d < cutoff || d > todayDate) continue;
+    }
+    rows.push({ date, count: c });
   }
-  return total;
+  rows.sort((a, b) => (a.date < b.date ? 1 : -1));
+  return rows;
 }

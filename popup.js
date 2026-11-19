@@ -8,7 +8,7 @@ const timerEl      = document.getElementById('statusTimer');
 const stateEl      = document.getElementById('statusState');
 const counterEl    = document.getElementById('statusCounter');
 const rangeSelect  = document.getElementById('rangeSelect');
-const rangeTotalEl = document.getElementById('rangeTotal');
+const historyTable = document.getElementById('historyTable');
 const btnCountdown = document.getElementById('btnCountdown');
 const btnReset     = document.getElementById('btnReset');
 const btnClear     = document.getElementById('btnClear');
@@ -41,10 +41,20 @@ function refreshStatus() {
   });
 }
 
+function renderHistoryTable(rows) {
+  if (rows.length === 0) {
+    historyTable.innerHTML = '<tr><td class="history-empty" colspan="2">No data for this range</td></tr>';
+    return;
+  }
+  historyTable.innerHTML = rows.map(({ date, count }) =>
+    `<tr><td class="hist-date">${date}</td><td class="hist-count">${count}</td></tr>`
+  ).join('');
+}
+
 function refreshCounters() {
   yappRollover((data) => {
     counterEl.textContent = String(data.count);
-    rangeTotalEl.textContent = String(yappRangeTotal(rangeSelect.value, data));
+    renderHistoryTable(yappRangeEntries(rangeSelect.value, data));
   });
 }
 
